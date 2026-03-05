@@ -39,9 +39,10 @@ export async function fetchFromSupabase() {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
     if (error) throw error
+    if (!data) return null  // table is empty
 
     // Map Supabase column names to the format the dashboard expects
     return {
