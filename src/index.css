@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #080C0E;
+  --surface: #0D1517;
+  --surface2: #111920;
+  --border: rgba(0,255,200,0.08);
+  --border-active: rgba(0,255,200,0.25);
+  --cyan: #00FFC8;
+  --cyan-dim: rgba(0,255,200,0.12);
+  --danger: #FF3B3B;
+  --warn: #FFB800;
+  --text: #E8F0EE;
+  --muted: #5A7068;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-active); border-radius: 2px; }
+
+/* Glass card */
+.glass {
+  background: rgba(13,21,23,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.glass-active {
+  background: rgba(0,255,200,0.04);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-active);
+  border-radius: 16px;
+}
+
+/* Glow effects */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0,255,200,0.15), 0 0 40px rgba(0,255,200,0.05);
+}
+
+.glow-danger {
+  box-shadow: 0 0 20px rgba(255,59,59,0.25), 0 0 40px rgba(255,59,59,0.1);
+}
+
+/* Grid bg */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0,255,200,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scan line */
+.scanline {
+  background: linear-gradient(transparent 50%, rgba(0,255,200,0.015) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+/* Live dot */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--cyan);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* Shimmer loading */
+.shimmer {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Nav active */
+.nav-item { transition: all 0.2s ease; }
+.nav-item.active { color: var(--cyan); }
+.nav-item.active svg { filter: drop-shadow(0 0 4px var(--cyan)); }
+
+/* Alert banner */
+.alert-banner {
+  animation: alertPulse 2s ease-in-out infinite;
+}
+
+@keyframes alertPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Recharts custom */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(0,255,200,0.06) !important;
+}
+
+.recharts-tooltip-wrapper { outline: none !important; }
