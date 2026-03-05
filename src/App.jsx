@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { WifiOff, Wifi } from 'lucide-react'
+import { WifiOff, Wifi, Cloud, CloudOff } from 'lucide-react'
 import Navbar from './components/Navbar'
 import HomePage from './pages/HomePage'
 import MapPage from './pages/MapPage'
@@ -8,7 +8,9 @@ import AnalyticsPage from './pages/AnalyticsPage'
 import SettingsPage from './pages/SettingsPage'
 import useSensorData from './hooks/useSensorData'
 
-function OfflineBanner() {
+function OfflineBanner({ dataSource }) {
+  const isCloud = typeof window !== 'undefined' && !window.location.hostname.includes('localhost')
+
   return (
     <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-4"
       style={{
@@ -16,13 +18,15 @@ function OfflineBanner() {
         border: '1px solid rgba(255,59,59,0.35)',
         boxShadow: '0 0 24px rgba(255,59,59,0.15)',
       }}>
-      <WifiOff size={16} className="text-red-400 flex-shrink-0" />
+      {isCloud ? <CloudOff size={16} className="text-red-400 flex-shrink-0" /> : <WifiOff size={16} className="text-red-400 flex-shrink-0" />}
       <div>
         <div className="text-xs font-mono tracking-widest text-red-400 uppercase font-semibold">
-          ESP32 Offline
+          {isCloud ? 'Sensor Data Unavailable' : 'ESP32 Offline'}
         </div>
         <div className="text-xs font-sans text-red-300 mt-0.5">
-          Cannot reach 192.168.4.1 — connect to the ESP32 WiFi and retry.
+          {isCloud
+            ? 'No data in Supabase yet — ensure the gateway is running and pushing data.'
+            : 'Cannot reach 192.168.4.1 — connect to the ESP32 WiFi and retry.'}
         </div>
       </div>
     </div>
@@ -30,15 +34,36 @@ function OfflineBanner() {
 }
 
 function ConnectingBanner() {
+  const isCloud = typeof window !== 'undefined' && !window.location.hostname.includes('localhost')
+
   return (
     <div className="flex items-center gap-3 px-4 py-3 rounded-xl mb-4"
       style={{
         background: 'rgba(0,255,200,0.05)',
         border: '1px solid rgba(0,255,200,0.15)',
       }}>
-      <Wifi size={16} style={{ color: 'var(--cyan)' }} className="flex-shrink-0 animate-pulse" />
+      {isCloud
+        ? <Cloud size={16} style={{ color: 'var(--cyan)' }} className="flex-shrink-0 animate-pulse" />
+        : <Wifi size={16} style={{ color: 'var(--cyan)' }} className="flex-shrink-0 animate-pulse" />}
       <div className="text-xs font-mono" style={{ color: 'var(--muted)' }}>
-        Connecting to ESP32 at 192.168.4.1…
+        {isCloud ? 'Connecting to Supabase…' : 'Connecting to ESP32 at 192.168.4.1…'}
+      </div>
+    </div>
+  )
+}
+
+function OnlineBanner({ dataSource }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-2 rounded-xl mb-4"
+      style={{
+        background: 'rgba(0,255,200,0.06)',
+        border: '1px solid rgba(0,255,200,0.18)',
+      }}>
+      {dataSource === 'supabase'
+        ? <Cloud size={14} style={{ color: 'var(--cyan)' }} className="flex-shrink-0" />
+        : <Wifi size={14} style={{ color: 'var(--cyan)' }} className="flex-shrink-0" />}
+      <div className="text-xs font-mono" style={{ color: 'var(--cyan)', opacity: 0.8 }}>
+        {dataSource === 'supabase' ? 'Live — Supabase Cloud' : 'Live — ESP32 Direct'}
       </div>
     </div>
   )
@@ -46,18 +71,18 @@ function ConnectingBanner() {
 
 export default function App() {
   const [tab, setTab] = useState('home')
-  const { current, history, status, lastUpdated, alertActive, error } = useSensorData()
+  const { current, history, status, lastUpdated, alertActive, error, dataSource } = useSensorData()
 
   const alertCount = history.filter(d => d.alert && d.alert !== 'System Normal').length
 
   const renderPage = () => {
     switch (tab) {
-      case 'home':      return <HomePage data={current} status={status} lastUpdated={lastUpdated} alertActive={alertActive} />
-      case 'map':       return <MapPage status={status} />
-      case 'alerts':    return <AlertsPage history={history} />
+      case 'home': return <HomePage data={current} status={status} lastUpdated={lastUpdated} alertActive={alertActive} />
+      case 'map': return <MapPage status={status} />
+      case 'alerts': return <AlertsPage history={history} />
       case 'analytics': return <AnalyticsPage data={current} history={history} />
-      case 'settings':  return <SettingsPage status={status} lastUpdated={lastUpdated} error={error} />
-      default:          return null
+      case 'settings': return <SettingsPage status={status} lastUpdated={lastUpdated} error={error} dataSource={dataSource} />
+      default: return null
     }
   }
 
@@ -73,7 +98,8 @@ export default function App() {
       <main className="relative z-10 max-w-lg mx-auto px-4 pt-14 pb-28">
         <div className="animate-fade-up">
           {status === 'connecting' && <ConnectingBanner />}
-          {status === 'offline'    && <OfflineBanner />}
+          {status === 'offline' && <OfflineBanner dataSource={dataSource} />}
+          {status === 'online' && <OnlineBanner dataSource={dataSource} />}
           {renderPage()}
         </div>
       </main>

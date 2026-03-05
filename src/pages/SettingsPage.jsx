@@ -1,5 +1,5 @@
 import React from 'react'
-import { Cpu, Wifi, RefreshCw } from 'lucide-react'
+import { Cpu, Wifi, Cloud, Database } from 'lucide-react'
 
 function InfoRow({ label, value, valueClass }) {
   return (
@@ -20,7 +20,21 @@ function Section({ title, children }) {
   )
 }
 
-export default function SettingsPage({ status, lastUpdated }) {
+export default function SettingsPage({ status, lastUpdated, error, dataSource }) {
+  const sourceLabel = {
+    supabase: '☁ Supabase Cloud',
+    esp32: '⚡ ESP32 Direct',
+    offline: '○ Disconnected',
+    connecting: '… Connecting',
+  }[dataSource] || '…'
+
+  const sourceClass = {
+    supabase: 'text-emerald-400',
+    esp32: 'text-cyan-400',
+    offline: 'text-red-400',
+    connecting: 'text-yellow-400',
+  }[dataSource] || 'text-yellow-400'
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -29,14 +43,19 @@ export default function SettingsPage({ status, lastUpdated }) {
       </div>
 
       <Section title="System Information">
-        <InfoRow label="Version"      value="1.0.0" />
-        <InfoRow label="Zone"         value="KGiSL – Seminar Hall 1" />
+        <InfoRow label="Version" value="1.0.0" />
+        <InfoRow label="Zone" value="KGiSL – Seminar Hall 1" />
         <InfoRow label="Data Refresh" value="2 Hz" />
         <InfoRow label="Last Updated"
           value={lastUpdated ? lastUpdated.toLocaleTimeString() : '—'} />
         <InfoRow
-          label="ESP32 Status"
-          value={status === 'online' ? '● Connected' : '○ Offline / Demo'}
+          label="Data Source"
+          value={sourceLabel}
+          valueClass={sourceClass}
+        />
+        <InfoRow
+          label="Status"
+          value={status === 'online' ? '● Connected' : '○ Offline'}
           valueClass={status === 'online' ? 'text-emerald-400' : 'text-red-400'}
         />
       </Section>
@@ -45,29 +64,37 @@ export default function SettingsPage({ status, lastUpdated }) {
         <div className="text-xs font-sans mb-3" style={{ color: 'var(--muted)' }}>
           Configured in firmware — read-only in v1
         </div>
-        <InfoRow label="Earthquake"       value="≥ 2.5 G"    valueClass="text-red-400 font-mono" />
-        <InfoRow label="Gas Leak"         value="> 800 ppm"   valueClass="text-red-400 font-mono" />
-        <InfoRow label="High Temperature" value="> 45.0 °C"   valueClass="text-red-400 font-mono" />
-        <InfoRow label="High Humidity"    value="> 90 %"      valueClass="text-red-400 font-mono" />
+        <InfoRow label="Earthquake" value="≥ 2.5 G" valueClass="text-red-400 font-mono" />
+        <InfoRow label="Gas Leak" value="> 800 ppm" valueClass="text-red-400 font-mono" />
+        <InfoRow label="High Temperature" value="> 45.0 °C" valueClass="text-red-400 font-mono" />
+        <InfoRow label="High Humidity" value="> 90 %" valueClass="text-red-400 font-mono" />
       </Section>
 
       <Section title="Sensor Hardware">
-        <InfoRow label="Seismic"         value="MPU6050" />
-        <InfoRow label="Gas"             value="MQ-Series" />
+        <InfoRow label="Seismic" value="MPU6050" />
+        <InfoRow label="Gas" value="MQ-Series" />
         <InfoRow label="Temp / Humidity" value="DHT11" />
-        <InfoRow label="Controller"      value="ESP32 DevKit V1" />
-        <InfoRow label="Firmware"        value="SafetyHub v1.0" />
+        <InfoRow label="Controller" value="ESP32 DevKit V1" />
+        <InfoRow label="Firmware" value="SafetyHub v1.0" />
       </Section>
 
-      <Section title="Network">
-        <InfoRow label="API Endpoint"   value="192.168.4.1/api/data" />
-        <InfoRow label="WiFi SSID"      value="ESP32-SafetyHub" />
+      <Section title="Network & Pipeline">
+        <InfoRow label="ESP32 AP" value="192.168.4.1" />
+        <InfoRow label="WiFi SSID" value="SafetyHub" />
+        <InfoRow label="Gateway" value="localhost:3000" />
+        <InfoRow label="Cloud DB" value="Supabase" />
         <InfoRow
           label="Connection"
-          value={status === 'online' ? 'Live ESP32' : 'Demo Mode'}
-          valueClass={status === 'online' ? 'text-emerald-400' : 'text-yellow-400'}
+          value={sourceLabel}
+          valueClass={sourceClass}
         />
       </Section>
+
+      {error && (
+        <div className="glass p-4">
+          <div className="text-xs font-mono text-red-400">{error}</div>
+        </div>
+      )}
 
       <div className="glass p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-1">
@@ -75,7 +102,7 @@ export default function SettingsPage({ status, lastUpdated }) {
           <span className="text-xs font-mono" style={{ color: 'var(--cyan)' }}>Campus Safety Hub</span>
         </div>
         <div className="text-[10px] font-mono" style={{ color: 'var(--muted)' }}>
-          KGiSL Hackathon 2025 · ESP32 IoT System
+          KGiSL Hackathon 2025 · ESP32 IoT Pipeline
         </div>
       </div>
     </div>
