@@ -1,0 +1,25 @@
+{
+  "name": "SafetyHub — Campus Safety Dashboard",
+  "short_name": "SafetyHub",
+  "description": "Real-time campus safety monitoring with gas, seismic, temperature and humidity sensors",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1117",
+  "theme_color": "#00ffd0",
+  "categories": ["utilities", "education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -20,7 +20,8 @@ function Section({ title, children }) {
   )
 }
 
-export default function SettingsPage({ status, lastUpdated, error, dataSource }) {
+export default function SettingsPage({ status, lastUpdated, error, dataSource, notifPermission }) {
+  const isPWA = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
   const sourceLabel = {
     supabase: '☁ Supabase Cloud',
     esp32: '⚡ ESP32 Direct',
@@ -62,12 +63,28 @@ export default function SettingsPage({ status, lastUpdated, error, dataSource })
 
       <Section title="Alert Thresholds">
         <div className="text-xs font-sans mb-3" style={{ color: 'var(--muted)' }}>
-          Configured in firmware — read-only in v1
+          Browser push notifications + sound + vibration
         </div>
-        <InfoRow label="Earthquake" value="≥ 2.5 G" valueClass="text-red-400 font-mono" />
+        <InfoRow label="Earthquake" value="> 2.5 G" valueClass="text-red-400 font-mono" />
         <InfoRow label="Gas Leak" value="> 800 ppm" valueClass="text-red-400 font-mono" />
         <InfoRow label="High Temperature" value="> 45.0 °C" valueClass="text-red-400 font-mono" />
-        <InfoRow label="High Humidity" value="> 90 %" valueClass="text-red-400 font-mono" />
+        <InfoRow label="High Humidity" value="> 85 %" valueClass="text-red-400 font-mono" />
+      </Section>
+
+      <Section title="Notifications & PWA">
+        <InfoRow
+          label="Push Notifications"
+          value={notifPermission === 'granted' ? '● Enabled' : notifPermission === 'denied' ? '● Blocked' : '○ Not set'}
+          valueClass={notifPermission === 'granted' ? 'text-emerald-400' : notifPermission === 'denied' ? 'text-red-400' : 'text-yellow-400'}
+        />
+        <InfoRow
+          label="App Mode"
+          value={isPWA ? '● Standalone PWA' : '○ Browser'}
+          valueClass={isPWA ? 'text-emerald-400' : 'text-yellow-400'}
+        />
+        <InfoRow label="Alert Sound" value="● Enabled" valueClass="text-emerald-400" />
+        <InfoRow label="Vibration" value={'vibrate' in navigator ? '● Supported' : '○ Unsupported'} valueClass={'vibrate' in navigator ? 'text-emerald-400' : 'text-yellow-400'} />
+        <InfoRow label="Service Worker" value={'serviceWorker' in navigator ? '● Registered' : '○ Unsupported'} valueClass={'serviceWorker' in navigator ? 'text-emerald-400' : 'text-yellow-400'} />
       </Section>
 
       <Section title="Sensor Hardware">

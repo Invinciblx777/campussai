@@ -1,8 +1,13 @@
 import React from 'react'
-import { AlertTriangle, CheckCircle } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Wind, Flame, Activity, Droplets, Bell } from 'lucide-react'
 
-export default function AlertsPage({ history }) {
-  // Derive alerts from history
+const TYPE_ICONS = { gas: Wind, temperature: Flame, seismic: Activity, humidity: Droplets }
+const TYPE_COLORS = {
+  gas: '#00FFC8', temperature: '#FF6B35', seismic: '#A78BFA', humidity: '#00B4FF',
+}
+
+export default function AlertsPage({ history, alertSystemHistory = [] }) {
+  // Derive alerts from sensor history
   const alerts = history
     .filter(d => d.alert && d.alert !== 'System Normal')
     .slice()
@@ -52,6 +57,42 @@ export default function AlertsPage({ history }) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Notification Alert History */}
+      {alertSystemHistory.length > 0 && (
+        <>
+          <div className="mt-2">
+            <div className="flex items-center gap-2 mb-3">
+              <Bell size={14} style={{ color: 'var(--cyan)' }} />
+              <span className="text-xs font-mono tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
+                Push Notification Log
+              </span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {alertSystemHistory.slice(0, 20).map((a) => {
+                const Icon = TYPE_ICONS[a.type] || AlertTriangle
+                const color = TYPE_COLORS[a.type] || '#FF3B3B'
+                return (
+                  <div key={a.id} className="glass p-3 flex items-start gap-3"
+                    style={{ borderColor: `${color}30`, boxShadow: `0 0 12px ${color}10` }}>
+                    <div className="w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center"
+                      style={{ background: `${color}15` }}>
+                      <Icon size={13} style={{ color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-display font-semibold text-white leading-tight">{a.title}</div>
+                      <div className="text-[11px] font-sans mt-0.5 truncate" style={{ color: 'var(--muted)' }}>{a.body}</div>
+                      <div className="text-[10px] font-mono mt-1" style={{ color: 'var(--muted)' }}>
+                        {a.timestamp?.toLocaleTimeString?.() || '—'}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Current status */}

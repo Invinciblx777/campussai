@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { WifiOff, Wifi, Cloud, CloudOff } from 'lucide-react'
 import Navbar from './components/Navbar'
 import HomePage from './pages/HomePage'
@@ -7,6 +7,9 @@ import AlertsPage from './pages/AlertsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import SettingsPage from './pages/SettingsPage'
 import useSensorData from './hooks/useSensorData'
+import useAlertSystem from './hooks/useAlertSystem'
+import { AlertStack } from './components/AlertBanner'
+import InstallPrompt from './components/InstallPrompt'
 
 function OfflineBanner({ dataSource }) {
   const isCloud = typeof window !== 'undefined' && !window.location.hostname.includes('localhost')
@@ -72,16 +75,26 @@ function OnlineBanner({ dataSource }) {
 export default function App() {
   const [tab, setTab] = useState('home')
   const { current, history, status, lastUpdated, alertActive, error, dataSource } = useSensorData()
+  const { checkAlerts, activeAlerts, alertHistory, dismissAlert, dismissAllAlerts, notifPermission } = useAlertSystem()
 
-  const alertCount = history.filter(d => d.alert && d.alert !== 'System Normal').length
+  // Run alert checks whenever sensor data updates
+  useEffect(() => {
+    if (current && status === 'online') {
+      checkAlerts(current)
+    }
+  }, [current, status, checkAlerts])
+
+  // Alert count: active system alerts + history alerts
+  const historyAlertCount = history.filter(d => d.alert && d.alert !== 'System Normal').length
+  const totalAlertCount = activeAlerts.length + historyAlertCount
 
   const renderPage = () => {
     switch (tab) {
-      case 'home': return <HomePage data={current} status={status} lastUpdated={lastUpdated} alertActive={alertActive} />
+      case 'home': return <HomePage data={current} status={status} lastUpdated={lastUpdated} alertActive={alertActive || activeAlerts.length > 0} />
       case 'map': return <MapPage status={status} />
-      case 'alerts': return <AlertsPage history={history} />
+      case 'alerts': return <AlertsPage history={history} alertSystemHistory={alertHistory} />
       case 'analytics': return <AnalyticsPage data={current} history={history} />
-      case 'settings': return <SettingsPage status={status} lastUpdated={lastUpdated} error={error} dataSource={dataSource} />
+      case 'settings': return <SettingsPage status={status} lastUpdated={lastUpdated} error={error} dataSource={dataSource} notifPermission={notifPermission} />
       default: return null
     }
   }
@@ -97,14 +110,22 @@ export default function App() {
 
       <main className="relative z-10 max-w-lg mx-auto px-4 pt-14 pb-28">
         <div className="animate-fade-up">
+          {/* PWA Install Prompt */}
+          <InstallPrompt />
+
+          {/* Connection Status */}
           {status === 'connecting' && <ConnectingBanner />}
           {status === 'offline' && <OfflineBanner dataSource={dataSource} />}
           {status === 'online' && <OnlineBanner dataSource={dataSource} />}
+
+          {/* Active Alert Banners (from centralized alert system) */}
+          <AlertStack alerts={activeAlerts} onDismiss={dismissAlert} />
+
           {renderPage()}
         </div>
       </main>
 
-      <Navbar active={tab} onChange={setTab} alertCount={alertCount} />
+      <Navbar active={tab} onChange={setTab} alertCount={totalAlertCount} />
     </div>
   )
 }
